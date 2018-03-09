@@ -1,0 +1,117 @@
+<html>
+  <head>
+    <title>{{ title }}</title>
+  </head>
+  <style>
+    .container{
+      position: relative;
+      max-width: 80vw;
+      margin: 10vw;
+    }
+    form{
+      position: relative;
+      text-align: center;
+      max-width: 80vw;
+      margin: 10vw;
+      padding: 5vh;
+      background: #1474bc;
+    }
+    label{
+      font-family: Cambria, Cochin, Georgia, Times, Times New Roman, serif;
+      color: white;
+    }
+    input{
+      text-align: center
+    }
+    input[type='number']{
+      -moz-appearance:textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button{
+      -webkit-appearance : none;
+      margin: 0;
+    }
+    button{
+      margin-top: 3vh;
+      height: 40px;
+      width: 5vw;
+      border: none;
+      box-shadow: 0 0 1vh black;
+      background: #ced3dc;
+      cursor: pointer;
+    }
+    p{
+      color:white;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <form action="Javascript:pay();" method="post">
+        <label for="cardNumber">Card Number</label><br>
+        <input id="cardNumber" type="number" /><br>
+        <label for="expMonth">Exp Month</label><br>
+        <input id="expMonth" type="number" /><br>
+        <label for="expYear">Exp Year</label><br>
+        <input id='expYear' type="number" /><br>
+        <label for="cvc">CVC</label><br>
+        <input id='cvc' type="number" /><br>
+        <label for="amount">Amount in $</label><br>
+        <input id='amount' type="number" /><br>
+        <button id='pay'>PAY</button><br>
+        <p id="message"></p>
+      </form>
+    </div>
+
+    <script>
+      function pay(){
+        document.getElementById('message').innerHTML = ''
+        const cardNumber = document.getElementById('cardNumber').value
+        const mm = document.getElementById('expMonth').value
+        const yy = document.getElementById('expYear').value
+        const cvc = document.getElementById('cvc').value
+        const amount = document.getElementById('amount').value
+        if(!(/^\d{16}$/.test(cardNumber))) {
+          document.getElementById('message').innerHTML = 'Invalid card number'
+        }else if(!(/^\d{2}$/.test(mm))) {
+          document.getElementById('message').innerHTML = 'Month must be of MM format'
+        }else if(!(/^\d{4}$/.test(yy))){
+          document.getElementById('message').innerHTML = 'Year must be of YYYY format'
+        }else if(!(/^\d{3}$/.test(cvc))) {
+          document.getElementById('message').innerHTML = 'Invalid CVC'
+        }else if(!amount) {
+          document.getElementById('message').innerHTML = 'Enter Amount'
+        }else{
+          document.getElementById('pay').disabled = true
+          const data = {
+            cardNumber,
+            mm,
+            yy,
+            cvc,
+            amount
+          }
+          
+          var xmlhttp = new XMLHttpRequest() 
+          xmlhttp.open("POST", '/pay', true)
+          xmlhttp.setRequestHeader("Content-type", "application/json;charset=UTF-8")
+          xmlhttp.onreadystatechange = function() {
+            if (this.readyState === 4) {
+              if (this.status === 200){
+                const res = JSON.parse(this.response)
+                document.getElementById('pay').disabled = false
+                if(res.error){
+                  document.getElementById('message').innerHTML = res.error.message
+                }else{
+                  document.getElementById('message').innerHTML = res.message
+                }
+              }else{
+                document.getElementById('pay').disabled = false
+                document.getElementById('message').innerHTML = "Request failed"
+              }        
+            }
+          }
+          xmlhttp.send(JSON.stringify(data))
+        }
+      }
+    </script>
+  </body>
+</html>
